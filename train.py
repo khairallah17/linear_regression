@@ -1,28 +1,31 @@
 import json
+import math
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from plot import plot_results
 
 
-def write_values(theta0, theta1, mse_history):
+def write_values(theta0, theta1):
     """
-    Computing the prediction of a linear model
+    writing the parameters values to extrenal file for
+    further testing
     Args:
         theta0, theta1 (float): model parametres
         mse_history (np.ndarray(m, )): residuals result set
     """
-    file_path = "features.json"
+    file_path = "params.json"
 
     mode = "w"
 
     if not os.path.exists(file_path):
         mode = "x"
 
-    s = {"theta0": theta0, "theta1": theta1, "mse": mse_history}
-    with open("features.json", mode) as f:
+    s = {"theta0": theta0, "theta1": theta1}
+    with open(file_path, mode) as f:
         json.dump(s, f)
         f.close()
 
@@ -41,18 +44,52 @@ def normalize(x_train):
     """
     mean = x_train.mean()
     std = x_train.std()
-    return (x_train - mean) / std, mean, std
+    return (x_train - mean) / std
 
 
-def gradient_descent(x_train, y_train, iterations, lr=0.01):
+def RMSE(rss, size):
+    return math.sqrt(rss / size)
+
+
+def RSS(y_pred, y_train):
+
+    rs = (y_train - y_pred) ** 2
+    return np.sum(rs)
+
+
+def TSS(y_train, mean):
+
+    ts = (y_train - mean) ** 2
+    return np.sum(ts)
+
+
+def evaluate(y_pred, y_train, mse_history):
+
+    rss = RSS(y_pred, y_train)
+    tss = TSS(y_train, np.mean(y_train))
+    r_square = 1 - (rss / tss)
+
+    rmse = RMSE(rss, y_pred.size)
+
+    return r_square, rmse
+
+
+def gradient_descent(
+    x_train: np.ndarray, y_train: np.ndarray, iterations: int, lr: float = 0.01
+):
     """
-    Computing the prediction of a linear model
+    calculating the values for model parametres using gradient
+    descent search algorithm
+    this algorithm works by finding the lowest point of the curve
+    it works by find the slope and the intercept for each point of
+    the curve until convergence
     Args:
-        x (ndarray (m,)): Data, m examples
-        y (ndarray (m.)): Data, m examples
-        w,b (scalar)    : model parameters
+        x_train (ndarray (m,)): input values
+        y_train (ndarray (m,)): output values
+        iterations (int)    : number of iteration for the algorithm
     Returns
-        f_wb (ndarray (m,)): model prediction
+        theta0, theta1 : final model parameters
+        mse_histroy: mean squared errors values untill convergence
     """
     theta0 = 0
     theta1 = 0
@@ -77,28 +114,47 @@ def gradient_descent(x_train, y_train, iterations, lr=0.01):
     return theta0, theta1, mse_history
 
 
-def main():
+def plot_errors_convergence(mse):
+
+    plt.plot(np.arange(0, 1000, 1), mse)
+    plt.xlabel("epochs")
+    plt.ylabel("mean squared error")
+    plt.show()
+
+    return
+
+
+def train():
     try:
         df = pd.read_csv("./data.csv")
 
         x_train = np.array(df["km"])
         y_train = np.array(df["price"])
 
-        x_norm, mean, std = normalize(x_train)
+        x_norm = normalize(x_train)
 
         theta0, theta1, mse_history = gradient_descent(x_norm, y_train, 1000)
 
         y_pred = theta0 + theta1 * x_norm
 
+        plot_errors_convergence(mse_history)
         plot_results(x_norm, y_pred, y_train)
 
-        write_values(theta0, theta1, mse_history)
+        r_square, rmse = evaluate(y_pred, y_train, mse_history)
+
+        print(f"r\u00b2 = {r_square*100:.2f}%\nRMSE = {rmse}")
+
+        write_values(theta0, theta1)
 
         return
 
     except Exception as error:
         print(f"error: {error}")
         raise
+
+
+def main():
+    train()
 
 
 if __name__ == "__main__":

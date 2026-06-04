@@ -2,6 +2,7 @@ import json
 import os
 import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -82,14 +83,18 @@ def predict():
 
         params = get_params()
 
-        x_norm, mean, std = normalize(df["km"])
+        x_norm = normalize(df["km"])
 
         cm = compute_model(x_norm, params["theta0"], params["theta1"])
 
-        plot_results(df["km"], cm, df["price"])
+        fig, ax = plt.subplots(1)
+
+        plot_results(ax, df["km"], cm, df["price"])
+
+        plt.show()
 
     except Exception as e:
-        print(f"Error --> {e}")
+        print(f"Error Predict --> {e}")
 
 
 def main():

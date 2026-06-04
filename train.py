@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from plot import plot_results
+from plot import plot_results, plot_errors_convergence
 
 
 def write_values(theta0, theta1):
@@ -32,39 +32,74 @@ def write_values(theta0, theta1):
     return
 
 
-def normalize(x_train):
+def normalize(x_train: np.ndarray) -> np.ndarray:
     """
-    Computing the prediction of a linear model
+    numerical data normalization beofre traing so we do not
+    get large values during training
     Args:
-        x (ndarray (m,)): Data, m examples
-        y (ndarray (m.)): Data, m examples
-        w,b (scalar)    : model parameters
+        x_train (ndarray (m,)): x training values
     Returns
-        f_wb (ndarray (m,)): model prediction
+        (ndarray (m,)): normalized values
     """
     mean = x_train.mean()
     std = x_train.std()
     return (x_train - mean) / std
 
 
-def RMSE(rss, size):
+def RMSE(rss: float, size: int) -> float:
+    """
+    root mean squared error avluation metric
+    Args:
+        rss (float): sum squares of residuals (predicted values)
+        size (int): size of the input
+    Returns
+        (float): rmse value
+    """
     return math.sqrt(rss / size)
 
 
-def RSS(y_pred, y_train):
+def RSS(y_pred: np.ndarray, y_train: np.ndarray) -> float:
+    """
+    sum squares of residuals (predicted values)
+    Args:
+        y_pred (np.ndarray(m,)): residuals (predicted values)
+        y_train (np.ndarray(m, )): excpected values
+    Returns
+        (float): sum squares of residuals value
+    """
+    rss = (y_train - y_pred) ** 2
+    return np.sum(rss)
 
-    rs = (y_train - y_pred) ** 2
-    return np.sum(rs)
 
-
-def TSS(y_train, mean):
-
+def TSS(y_train: np.ndarray, mean: float) -> float:
+    """
+    total sum of squares is the squared of the difference between the
+    actual values and the mean of the predicted values
+    Args:
+        y_train (np.ndarray(m, )): actual values
+        mean (float): mean value of the predicted values
+    Returns
+        (float): total sum of squares value
+    """
     ts = (y_train - mean) ** 2
     return np.sum(ts)
 
 
-def evaluate(y_pred, y_train, mse_history):
-
+def evaluate(
+    y_pred: np.ndarray,
+    y_train: np.ndarray,
+    mse_history: list[float]
+) -> float:
+    """
+    calculating the evaluation metrics after the model training
+    Args:
+        y_pred (ndarray (m,)): predicted values
+        y_train (ndarray (m,)): given values
+        mse_history (list[float]): mean sqaured error values
+    Returns
+        r_square (float): fitness of the model
+        rmse (float): how far the predicted values from the actual values
+    """
     rss = RSS(y_pred, y_train)
     tss = TSS(y_train, np.mean(y_train))
     r_square = 1 - (rss / tss)
@@ -75,7 +110,10 @@ def evaluate(y_pred, y_train, mse_history):
 
 
 def gradient_descent(
-    x_train: np.ndarray, y_train: np.ndarray, iterations: int, lr: float = 0.01
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    iterations: int,
+    lr: float = 0.01
 ):
     """
     calculating the values for model parametres using gradient
@@ -114,17 +152,10 @@ def gradient_descent(
     return theta0, theta1, mse_history
 
 
-def plot_errors_convergence(mse):
-
-    plt.plot(np.arange(0, 1000, 1), mse)
-    plt.xlabel("epochs")
-    plt.ylabel("mean squared error")
-    plt.show()
-
-    return
-
-
 def train():
+    """
+    strating point for the model training process
+    """
     try:
         df = pd.read_csv("./data.csv")
 
@@ -137,8 +168,13 @@ def train():
 
         y_pred = theta0 + theta1 * x_norm
 
-        plot_errors_convergence(mse_history)
-        plot_results(x_norm, y_pred, y_train)
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig.suptitle("results")
+
+        plot_errors_convergence(ax1, mse_history)
+        plot_results(ax2, x_norm, y_pred, y_train)
+
+        plt.show()
 
         r_square, rmse = evaluate(y_pred, y_train, mse_history)
 
@@ -150,10 +186,12 @@ def train():
 
     except Exception as error:
         print(f"error: {error}")
-        raise
 
 
 def main():
+    """
+    Program entrypoint
+    """
     train()
 
 

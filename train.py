@@ -5,8 +5,9 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import stats
 
-from plot import plot_results, plot_errors_convergence
+from plot import density_curve, plot_errors_convergence, plot_results
 
 
 def write_values(theta0, theta1):
@@ -41,6 +42,10 @@ def normalize(x_train: np.ndarray) -> np.ndarray:
     Returns
         (ndarray (m,)): normalized values
     """
+    
+    scores = stats.zscore(x_train)
+    print(scores)
+
     mean = x_train.mean()
     std = x_train.std()
     return (x_train - mean) / std
@@ -86,9 +91,7 @@ def TSS(y_train: np.ndarray, mean: float) -> float:
 
 
 def evaluate(
-    y_pred: np.ndarray,
-    y_train: np.ndarray,
-    mse_history: list[float]
+    y_pred: np.ndarray, y_train: np.ndarray, mse_history: list[float]
 ) -> float:
     """
     calculating the evaluation metrics after the model training
@@ -110,10 +113,7 @@ def evaluate(
 
 
 def gradient_descent(
-    x_train: np.ndarray,
-    y_train: np.ndarray,
-    iterations: int,
-    lr: float = 0.01
+    x_train: np.ndarray, y_train: np.ndarray, iterations: int, lr: float = 0.01
 ):
     """
     calculating the values for model parametres using gradient
@@ -168,6 +168,9 @@ def train():
 
         y_pred = theta0 + theta1 * x_norm
 
+        density_curve(x_norm)
+
+        """
         fig, (ax1, ax2) = plt.subplots(1, 2)
         fig.suptitle("results")
 
@@ -181,7 +184,7 @@ def train():
         print(f"r\u00b2 = {r_square*100:.2f}%\nRMSE = {rmse}")
 
         write_values(theta0, theta1)
-
+        """
         return
 
     except Exception as error:

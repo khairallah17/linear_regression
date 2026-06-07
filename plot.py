@@ -1,5 +1,16 @@
 import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
+from scipy import stats
+
+
+def density_curve(X):
+
+    scores = stats.norm.cdf(X)
+
+    plt.plot(scores)
+    plt.show()
+    return
 
 
 def plot_errors_convergence(ax: matplotlib.axes.Axes, mse: list[float]):

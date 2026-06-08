@@ -2,7 +2,7 @@
 
 A linear regression model built from scratch in Python — no sklearn, no shortcuts. Given a car's mileage, the model predicts its diesel cost using gradient descent.
 
-Full write-up: [khairallah17.github.io/posts/Linear-Regression-from-Scratch](https://khairallah17.github.io/posts/Linear-Regression-from-Scratch/)
+Full write-up: [khairallah17.github.io/posts/Linear-Regression-from-Scratch](https://khairallah17.github.io/posts/linear-regression/)
 
 ## Setup
 
